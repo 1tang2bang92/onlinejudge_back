@@ -7,6 +7,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - '3000:3000'
+    depends_on:
+      - db
 
   kafka_b:
     image: bitnami/kafka:3.4
@@ -72,6 +74,7 @@ services:
 
   db:
     image: 'postgres:16.2'
+    hostname: postdb
     environment:
       POSTGRES_USER: '${PG_USER}'
       POSTGRES_PASSWORD: '${PG_PW}'
