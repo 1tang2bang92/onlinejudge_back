@@ -1,0 +1,105 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model answer_set {
+  uid         Int          @id @default(autoincrement())
+  puid        Int?
+  mode        mode_t?      @default(test_case)
+  input       String?      @db.VarChar(255)
+  output      String?      @db.VarChar(255)
+  answer_code String?      @db.VarChar(255)
+  problem_set problem_set? @relation(fields: [puid], references: [uid], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model course {
+  uid               Int                 @id @default(autoincrement())
+  board             Int                 @db.SmallInt
+  open              DateTime            @default(now()) @db.Timestamptz(6)
+  close             DateTime            @default(dbgenerated("'infinity'::timestamp with time zone")) @db.Timestamptz(6)
+  create_at         DateTime            @default(now()) @db.Timestamptz(6)
+  delete_at         DateTime?           @db.Timestamptz(6)
+  course_owner      course_owner[]
+  problem_set       problem_set[]
+  whitelist_entries whitelist_entries[]
+}
+
+model course_owner {
+  uid       Int       @id @default(autoincrement())
+  course_id Int
+  user_id   Int
+  course    course    @relation(fields: [course_id], references: [uid], onDelete: NoAction, onUpdate: NoAction)
+  user_info user_info @relation(fields: [user_id], references: [uid], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model problem_set {
+  uid              Int                @id @default(autoincrement())
+  cuid             Int
+  title            String             @db.VarChar(255)
+  body             Json               @db.Json
+  create_at        DateTime           @default(now()) @db.Timestamptz(6)
+  delete_at        DateTime?          @db.Timestamptz(6)
+  answer_set       answer_set[]
+  course           course             @relation(fields: [cuid], references: [uid], onDelete: NoAction, onUpdate: NoAction)
+  solution_history solution_history[]
+}
+
+model solution_history {
+  uid         Int         @id @default(autoincrement())
+  puid        Int
+  source      String?     @db.VarChar(255)
+  create_at   DateTime    @default(now()) @db.Timestamptz(6)
+  runtime     Int?
+  memory      Int?
+  result_t    result_t_t
+  user_id     Int
+  problem_set problem_set @relation(fields: [puid], references: [uid], onDelete: NoAction, onUpdate: NoAction)
+  user_info   user_info   @relation(fields: [user_id], references: [uid], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model user_info {
+  uid               Int                 @id @default(autoincrement())
+  id                String?             @db.VarChar(255)
+  password          String              @db.VarChar(255)
+  permission_t      permission_t_t      @default(student)
+  student_id        Int?
+  nick_name         String              @db.VarChar(255)
+  create_at         DateTime            @default(now()) @db.Timestamptz(6)
+  delete_at         DateTime?           @db.Timestamptz(6)
+  course_owner      course_owner[]
+  solution_history  solution_history[]
+  whitelist_entries whitelist_entries[]
+}
+
+model whitelist_entries {
+  uid       Int        @id
+  cid       Int?
+  user_id   Int?
+  create_at DateTime?  @default(now()) @db.Timestamptz(6)
+  delete_at DateTime?  @db.Timestamptz(6)
+  course    course?    @relation(fields: [cid], references: [uid], onDelete: NoAction, onUpdate: NoAction)
+  user_info user_info? @relation(fields: [user_id], references: [uid], onDelete: NoAction, onUpdate: NoAction)
+}
+
+enum mode_t {
+  test_case
+  special
+}
+
+enum permission_t_t {
+  student
+  professor
+  admin
+}
+
+enum result_t_t {
+  correct
+  compile_error
+  runtime_error
+  fail
+}
