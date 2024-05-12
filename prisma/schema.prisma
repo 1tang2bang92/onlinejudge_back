@@ -65,7 +65,7 @@ model solution_history {
 
 model user_info {
   uid               Int                 @id @default(autoincrement())
-  id                String?             @db.VarChar(255)
+  id                String?             @unique @db.VarChar(255)
   password          String              @db.VarChar(255)
   permission_t      permission_t_t      @default(student)
   student_id        Int?
@@ -73,6 +73,7 @@ model user_info {
   create_at         DateTime            @default(now()) @db.Timestamptz(6)
   delete_at         DateTime?           @db.Timestamptz(6)
   course_owner      course_owner[]
+  login             login[]
   solution_history  solution_history[]
   whitelist_entries whitelist_entries[]
 }
@@ -85,6 +86,15 @@ model whitelist_entries {
   delete_at DateTime?  @db.Timestamptz(6)
   course    course?    @relation(fields: [cid], references: [uid], onDelete: NoAction, onUpdate: NoAction)
   user_info user_info? @relation(fields: [user_id], references: [uid], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model login {
+  uid       Int       @id @default(autoincrement())
+  user_id   Int
+  token     String    @db.VarChar(255)
+  create_at DateTime  @default(now()) @db.Timestamptz(6)
+  expire_at DateTime  @db.Timestamptz(6)
+  user_info user_info @relation(fields: [user_id], references: [uid], onDelete: NoAction, onUpdate: NoAction)
 }
 
 enum mode_t {

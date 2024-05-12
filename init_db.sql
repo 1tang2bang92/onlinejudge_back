@@ -76,6 +76,15 @@ CREATE TABLE "answer_set" (
 	PRIMARY KEY("uid")
 );
 
+CREATE TABLE "login" (
+	"uid" serial NOT NULL,
+	"user_id" int NOT NULL,
+	"token" varchar(255) NOT NULL,
+	"create_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+	"expire_at" TIMESTAMPTZ NOT NULL,
+	PRIMARY KEY("uid")
+);
+
 ALTER TABLE "solution_history"
 ADD FOREIGN KEY("user_id") REFERENCES "user_info"("uid")
 ON UPDATE NO ACTION ON DELETE NO ACTION;
@@ -99,4 +108,7 @@ ADD FOREIGN KEY("user_id") REFERENCES "user_info"("uid")
 ON UPDATE NO ACTION ON DELETE NO ACTION;
 ALTER TABLE "answer_set"
 ADD FOREIGN KEY("puid") REFERENCES "problem_set"("uid")
+ON UPDATE NO ACTION ON DELETE NO ACTION;
+ALTER TABLE "login"
+ADD FOREIGN KEY("user_id") REFERENCES "user_info"("uid")
 ON UPDATE NO ACTION ON DELETE NO ACTION;
