@@ -90,11 +90,11 @@ model whitelist_entries {
 
 model login {
   uid       Int       @id @default(autoincrement())
-  user_id   Int
+  user_id   String    @db.VarChar(255)
   token     String    @db.VarChar(255)
   create_at DateTime  @default(now()) @db.Timestamptz(6)
   expire_at DateTime  @db.Timestamptz(6)
-  user_info user_info @relation(fields: [user_id], references: [uid], onDelete: NoAction, onUpdate: NoAction)
+  user_info user_info @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 enum mode_t {
