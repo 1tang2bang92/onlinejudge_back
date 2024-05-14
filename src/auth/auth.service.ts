@@ -23,7 +23,12 @@ export class AuthService extends ConsoleLogger {
     }
 
     const token = jsonwebtoken.sign(
-      { userId: id },
+      {
+        userId: id,
+        nick_name: user.nick_name,
+        student_id: user.student_id,
+        role: user.permission_t,
+      },
       process.env.JWT_SECRET || 'test',
       { expiresIn: '1h' },
     )
