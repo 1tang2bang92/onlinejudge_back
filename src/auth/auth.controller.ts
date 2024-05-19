@@ -31,6 +31,21 @@ export class AuthController extends ConsoleLogger {
       })
   }
 
+  @Post('refresh')
+  async refresh(@Body() body, @Response() res) {
+    this.authService
+      .refresh(body.refreshToken)
+      .then((token) => {
+        res
+          .header('Authorization', `Bearer ${token}`)
+          .status(HttpStatus.OK)
+          .send('토큰 재발급에 성공했습니다.')
+      })
+      .catch(() => {
+        res.status(HttpStatus.UNAUTHORIZED).send('토큰 재발급에 실패했습니다.')
+      })
+  }
+
   @Post('register')
   async register(@Body() authRegisterDto: AuthRegisterDto, @Response() res) {
     this.authService
@@ -40,6 +55,18 @@ export class AuthController extends ConsoleLogger {
       })
       .catch((error) => {
         res.status(HttpStatus.BAD_REQUEST).send(error.message)
+      })
+  }
+
+  @Delete('logout')
+  async logout(@Body() body, @Response() res) {
+    this.authService
+      .logout(body.token)
+      .then(() => {
+        res.status(HttpStatus.OK).send('로그아웃에 성공했습니다.')
+      })
+      .catch(() => {
+        res.status(HttpStatus.UNAUTHORIZED).send('로그아웃에 실패했습니다.')
       })
   }
 
