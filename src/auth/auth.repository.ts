@@ -69,6 +69,14 @@ export class AuthRepository extends AppService {
     })
   }
 
+  async deleteToken(userId: any, token: any) {
+    await this.prisma.login.deleteMany({
+      where: {
+        AND: [userId, token],
+      },
+    })
+  }
+
   async deleteUser(id: string): Promise<void> {
     await this.prisma.user_info.updateMany({
       where: { id: id },
@@ -76,7 +84,26 @@ export class AuthRepository extends AppService {
     })
   }
 
-  async findToken(userId: string) {
+  async findToken(
+    userId: string,
+    token: string,
+    refreshToken: boolean = false,
+  ) {
+    if (refreshToken) {
+      return this.prisma.login.findFirst({
+        where: {
+          user_id: userId,
+          AND: {
+            expire_at: {
+              gte: new Date(new Date().getTime() + 1000 * 60 * 10),
+            },
+          },
+        },
+        orderBy: {
+          create_at: 'desc',
+        },
+      })
+    }
     return this.prisma.login.findFirst({
       where: {
         user_id: userId,
@@ -84,6 +111,7 @@ export class AuthRepository extends AppService {
           expire_at: {
             gte: new Date(),
           },
+          token,
         },
       },
       orderBy: {
