@@ -2,10 +2,8 @@ import { Injectable } from '@nestjs/common'
 import { AppService, PrismaService } from '../app.service'
 
 @Injectable()
-export class AuthRepository extends AppService {
-  constructor(private prisma: PrismaService) {
-    super()
-  }
+export class AuthRepository {
+  constructor(private prisma: PrismaService) {}
 
   async findById(id: string) {
     return this.prisma.user_info.findFirst({
