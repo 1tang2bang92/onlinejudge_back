@@ -27,22 +27,29 @@ export class AuthGuard extends ConsoleLogger implements CanActivate {
   }
 
   async validateRequest(request: any, roles: string[]) {
-    const jwt = request.headers.bearer
-    if (!jwt) {
+    const authHeader = request.headers.authorization
+    if (!authHeader) {
       return false
     }
 
-    return this.authService
-      .verifyToken(jwt)
-      .then((token) => {
-        return roles &&
-          roles.length > 0 &&
-          roles.some((role) => token.roles?.includes(role))
-          ? false
-          : true
-      })
-      .catch(() => {
-        return false
-      })
+    const [bearer, jwt] = authHeader.split(' ')
+    if (bearer !== 'Bearer' || !jwt) {
+      return false
+    }
+
+    try {
+      const decodedToken = await this.authService.verifyToken(jwt)
+      request.user = {
+        userId: decodedToken.userId,
+        role: decodedToken.role,
+      }
+      return roles &&
+        roles.length > 0 &&
+        roles.some((role) => decodedToken.roles?.includes(role))
+        ? false
+        : true
+    } catch {
+      return false
+    }
   }
 }
