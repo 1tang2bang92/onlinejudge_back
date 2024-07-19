@@ -5,6 +5,7 @@ import {
   OnModuleDestroy,
 } from '@nestjs/common'
 import { PrismaClient } from '@prisma/client'
+import { env } from 'process'
 
 @Injectable()
 export class PrismaService
@@ -12,7 +13,11 @@ export class PrismaService
   implements OnModuleInit, OnModuleDestroy
 {
   constructor() {
-    super()
+    if (env.NODE_ENV === 'production') {
+      super({ log: ['warn', 'error'] })
+    } else {
+      super({ log: ['query', 'info', 'warn', 'error'] })
+    }
   }
 
   @Inject()
