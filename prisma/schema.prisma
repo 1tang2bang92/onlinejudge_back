@@ -1,6 +1,7 @@
 generator client {
-  provider      = "prisma-client-js"
-  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+  provider        = "prisma-client-js"
+  binaryTargets   = ["native", "linux-musl-openssl-3.0.x"]
+  previewFeatures = ["omitApi"]
 }
 
 datasource db {
@@ -11,7 +12,6 @@ datasource db {
 model answer_set {
   uid         Int          @id @default(autoincrement())
   puid        Int?
-  mode        mode_t?      @default(test_case)
   input       String?      @db.VarChar(255)
   output      String?      @db.VarChar(255)
   answer_code String?      @db.VarChar(255)
@@ -20,9 +20,10 @@ model answer_set {
 
 model course {
   uid               Int                 @id @default(autoincrement())
-  board             Int                 @db.SmallInt
+  title             String              @db.VarChar(255)
+  board             Int
   open              DateTime            @default(now()) @db.Timestamptz(6)
-  close             DateTime            @default(dbgenerated("'infinity'::timestamp with time zone")) @db.Timestamptz(6)
+  close             DateTime?           @db.Timestamptz(6)
   create_at         DateTime            @default(now()) @db.Timestamptz(6)
   delete_at         DateTime?           @db.Timestamptz(6)
   course_owner      course_owner[]
@@ -43,6 +44,7 @@ model problem_set {
   cuid             Int
   title            String             @db.VarChar(255)
   body             Json               @db.Json
+  mode             mode_t?            @default(test_case)
   create_at        DateTime           @default(now()) @db.Timestamptz(6)
   delete_at        DateTime?          @db.Timestamptz(6)
   answer_set       answer_set[]
