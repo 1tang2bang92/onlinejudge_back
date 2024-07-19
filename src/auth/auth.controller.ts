@@ -31,6 +31,13 @@ export class AuthController extends ConsoleLogger {
       })
   }
 
+  /**
+   * Refreshes the access token using the provided refresh token.
+   *
+   * @param body - The request body containing the refresh token.
+   * @param res - The response object used to send the refreshed access token.
+   * @returns A Promise that resolves to the refreshed access token.
+   */
   @Post('refresh')
   async refresh(@Body() body, @Response() res) {
     this.authService
@@ -46,6 +53,13 @@ export class AuthController extends ConsoleLogger {
       })
   }
 
+  /**
+   * Registers a new user.
+   *
+   * @param {AuthRegisterDto} authRegisterDto - The data for the user registration.
+   * @param {Response} res - The response object to send the result.
+   * @returns {Promise<void>} - A promise that resolves when the user is successfully registered.
+   */
   @Post('register')
   async register(@Body() authRegisterDto: AuthRegisterDto, @Response() res) {
     this.authService
