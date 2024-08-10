@@ -6,26 +6,28 @@ import type { course } from '@prisma/client'
 export class ClassRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(className: string, classOwnerId: string) {
-    console.log('classname: ', className)
+  async create(courseData: course, classOwnerId: string) {
     return this.prisma.$transaction(async (tx) => {
-      const userInfo = await tx.user_info.findFirstOrThrow({
-        where: {
-          id: classOwnerId,
-        },
-      })
-
-      const course = await tx.course.create({
+      const { uid } = await tx.course.create({
         data: {
           board: 0,
-          title: className,
+          ...courseData,
+        },
+        select: {
+          uid: true,
         },
       })
 
-      await tx.course_owner.create({
+      const course = await tx.course_owner.create({
         data: {
-          course_id: course.uid,
-          user_id: userInfo.uid,
+          course: {
+            connect: { uid },
+          },
+          user_info: {
+            connect: {
+              id: classOwnerId,
+            },
+          },
         },
       })
 
@@ -125,6 +127,17 @@ export class ClassRepository {
       },
       data: {
         delete_at: new Date(),
+      },
+    })
+  }
+
+  async isClassOwner(userId: string, classId: number) {
+    return this.prisma.course_owner.findFirst({
+      where: {
+        user_info: {
+          id: userId,
+        },
+        course_id: classId,
       },
     })
   }

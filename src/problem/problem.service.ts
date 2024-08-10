@@ -1,36 +1,49 @@
 import { Injectable } from '@nestjs/common'
 import { ProblemRepository } from './problem.repository'
+import { ClassRepository } from '../class/class.repository'
+import type { problem_set } from '@prisma/client'
+import { WhitelistRepository } from '../whitelist/whitelist.repository'
 
 @Injectable()
 export class ProblemService {
-  constructor(private readonly problemRepository: ProblemRepository) {}
+  constructor(
+    private readonly problemRepository: ProblemRepository,
+    private readonly classRepository: ClassRepository,
+    private readonly whitelistRepository: WhitelistRepository,
+  ) {}
 
-  async createProblem(userId: string, classId: string, problemData: any) {
-    return this.problemRepository.createProblem(userId, classId, problemData)
-  }
-
-  async updateProblem(userId: string, problemData: any) {
-    return this.problemRepository.updateProblem(userId, problemData)
-  }
-
-  async deleteProblem(userId: string, problemId: string) {
-    if (!this.problemRepository.isCourseOwner(userId, problemId)) {
+  async createProblem(userId: string, problemData: problem_set) {
+    if (!this.classRepository.isClassOwner(userId, problemData.cuid)) {
       throw new Error('User does not own the specified course')
     }
-    return this.problemRepository.deleteProblem(userId, problemId)
+    return this.problemRepository.createProblem(problemData)
   }
 
-  async submitProblem(userId: string, solutionData: any) {
-    if (!this.problemRepository.isCourseOwner(userId, solutionData.problemId)) {
+  async updateProblem(userId: string, problemData: problem_set) {
+    if (!this.classRepository.isClassOwner(userId, problemData.cuid)) {
       throw new Error('User does not own the specified course')
     }
-    return this.problemRepository.submitProblem(userId, solutionData)
+    return this.problemRepository.updateProblem(problemData)
   }
 
-  async createAnswer(userId: string, answerData: any) {
-    if (!this.problemRepository.isCourseOwner(userId, answerData.problemId)) {
+  async deleteProblem(userId: string, classId: number, problemId: number) {
+    if (!this.classRepository.isClassOwner(userId, classId)) {
       throw new Error('User does not own the specified course')
     }
-    return this.problemRepository.createAnswer(userId, answerData)
+    return this.problemRepository.deleteProblem(problemId)
+  }
+
+  async getProblems(userId: string, classId: number) {
+    if (!this.whitelistRepository.hasStudent(userId, classId)) {
+      throw new Error('User does not own the specified course')
+    }
+    return this.problemRepository.getProblems(classId)
+  }
+
+  async getProblem(userId: string, classId: number, problemId: number) {
+    if (!this.whitelistRepository.hasStudent(userId, classId)) {
+      throw new Error('User does not own the specified course')
+    }
+    return this.problemRepository.getProblem(problemId)
   }
 }

@@ -1,103 +1,78 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from '../app.service'
+import type { problem_set } from '@prisma/client'
 
 @Injectable()
 export class ProblemRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async createProblem(userId: string, classId: string, problemData: any) {
-    // course_owner 테이블에서 사용자가 해당 과목을 소유하고 있는지 확인
-    const courseOwner = await this.prisma.course_owner.findFirst({
-      where: {
-        user_id: parseInt(userId),
-        course_id: parseInt(classId),
-      },
-    })
-
-    if (!courseOwner) {
-      // 사용자가 해당 과목을 소유하고 있지 않은 경우 에러 throw
-      throw new Error('User does not own the specified course')
-    }
-
+  async createProblem(problemData: problem_set) {
     return this.prisma.problem_set.create({
       data: {
         ...problemData,
       },
+      omit: {
+        uid: true,
+        create_at: true,
+        delete_at: true,
+      },
     })
   }
 
-  async updateProblem(userId: string, problemData: any) {
-    // course_owner 테이블에서 사용자가 해당 과목을 소유하고 있는지 확인
-    const courseOwner = await this.prisma.course_owner.findFirst({
-      where: {
-        user_id: parseInt(userId),
-        course_id: parseInt(problemData.cuid),
-      },
-    })
-
-    if (!courseOwner) {
-      // 사용자가 해당 과목을 소유하고 있지 않은 경우 에러 throw
-      throw new Error('User does not own the specified course')
-    }
-
+  async updateProblem(problemData: problem_set) {
     return this.prisma.problem_set.update({
       where: {
-        uid: parseInt(problemData.uid),
+        uid: problemData.uid,
         delete_at: null,
       },
       data: {
         ...problemData,
       },
-    })
-  }
-
-  async isCourseOwner(userId: string, problemId: string) {
-    return this.prisma.course_owner.findFirst({
-      include: {
-        course: true,
-      },
-      where: {
-        user_id: parseInt(userId),
-        course: {
-          problem_set: {
-            some: {
-              uid: parseInt(problemId),
-              delete_at: null,
-            },
-          },
-        },
+      omit: {
+        uid: true,
+        delete_at: true,
+        create_at: true,
       },
     })
   }
 
-  async deleteProblem(userId: string, course_id: string) {
-    return this.prisma.problem_set.delete({
+  async deleteProblem(problemId: number) {
+    return this.prisma.problem_set.update({
       where: {
-        uid: parseInt(course_id),
+        uid: problemId,
         delete_at: null,
       },
-    })
-  }
-
-  async submitProblem(userId: string, solutionData: any) {
-    return this.prisma.answer_set.create({
-      omit: {
-        uid: true,
-        answer_code: true,
-      },
       data: {
-        ...solutionData,
+        delete_at: new Date(),
       },
     })
   }
 
-  async createAnswer(userId: string, answerData: any) {
-    return this.prisma.answer_set.create({
-      omit: {
-        uid: true,
+  async getProblems(classId: number) {
+    return this.prisma.problem_set.findMany({
+      where: {
+        cuid: classId,
+        delete_at: null,
       },
-      data: {
-        ...answerData,
+      select: {
+        uid: true,
+        title: true,
+        create_at: true,
+      },
+    })
+  }
+
+  async getProblem(problemId: number) {
+    return this.prisma.problem_set.findFirst({
+      where: {
+        uid: problemId,
+        delete_at: null,
+      },
+      select: {
+        uid: true,
+        title: true,
+        body: true,
+        create_at: true,
       },
     })
   }
