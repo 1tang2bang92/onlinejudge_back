@@ -1,8 +1,0 @@
-kafka:
-  clusters:
-    - name: local
-      bootStrapServers: kafka_b:9094
-      # schemaRegistry: http://localhost:8081
-      # schemaRegistryAuth:
-      #   username: username
-      #   password: password
