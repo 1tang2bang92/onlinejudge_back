@@ -55,6 +55,7 @@ model problem_set {
 model solution_history {
   uid         Int         @id @default(autoincrement())
   puid        Int
+  language    String      @db.VarChar(255)
   source      String?     @db.VarChar(255)
   create_at   DateTime    @default(now()) @db.Timestamptz(6)
   runtime     Int?
@@ -81,9 +82,10 @@ model user_info {
 }
 
 model whitelist_entries {
-  uid       Int        @id
+  uid       Int        @id @default(autoincrement())
   cid       Int?
   user_id   Int?
+  accept    Boolean    @default(false)
   create_at DateTime?  @default(now()) @db.Timestamptz(6)
   delete_at DateTime?  @db.Timestamptz(6)
   course    course?    @relation(fields: [cid], references: [uid], onDelete: NoAction, onUpdate: NoAction)
