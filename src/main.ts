@@ -3,7 +3,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 import { AppModule } from './app.module'
 import { FastifyAdapter } from '@nestjs/platform-fastify'
 
-async function bootstrap() {
+export async function bootstrap() {
   const app = await NestFactory.create(AppModule, new FastifyAdapter(), {
     logger: ['error', 'warn'],
   })
@@ -19,4 +19,8 @@ async function bootstrap() {
 
   await app.listen(3000, '0.0.0.0')
 }
-bootstrap()
+
+// Only call bootstrap if this file is run directly (not imported)
+if (require.main === module) {
+  bootstrap()
+}
